@@ -12,3 +12,8 @@ one could make book recommendations given a large enough dataset.
 ## Work Similarity
 Download the visualization/author_pure_glov_vis.ipynb to view an interactive plotly scatter plot 
 with works labeled by author and title. 
+
+## Top-1 Matches
+A table of the Top-1 matches for a random sample of works:
+
+![Top 1 Matches](https://github.com/jcanad3/author_similarity/blob/master/imgs/top_1_matches.png)
