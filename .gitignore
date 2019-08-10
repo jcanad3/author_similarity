@@ -1,0 +1,7 @@
+txt/*
+*.txt
+*.zip
+*.npy
+*.csv
+*.data
+*.h5
