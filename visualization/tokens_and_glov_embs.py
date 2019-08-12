@@ -102,9 +102,14 @@ def gen_padded_docs(t, docs):
 
 	return padded_docs
 
-def get_docs(t, start_idx, end_idx):
+def get_docs(docs_dir, t, start_idx, end_idx):
+	num_files_in_dir = len(glob.glob(docs_dir + '*')) + 1
+	if end_idx > num_files_in_dir:
+		end_idx = num_files_in_dir
+
+
 	docs = []
-	for doc in glob.glob('../../scrape_gutenberg/works/*')[start_idx:end_idx]:
+	for doc in glob.glob(docs_dir + '*')[start_idx:end_idx]:
 		doc_path = os.path.basename(doc)
 		with open(doc, 'r') as f:
 			text = f.read().replace('\n',' ')
