@@ -8,8 +8,9 @@ visualization/author_pure_glov_vis.ipynb notebook. Using the generated dataframe
 one could make book recommendations given a large enough dataset.
 
 ## Work Similarity
-Download the visualization/v1_author_pure_glov_vis.ipynb or visualization/v2_orig_gutenberg_pure_glov_vis.ipynb 
+*Download the visualization/v1_author_pure_glov_vis.ipynb or visualization/v2_orig_gutenberg_pure_glov_vis.ipynb 
 to view an interactive plotly scatter plot with works labeled by author and title. 
+.*
 
 ## V1 - First 10,000 
 The first 10,000 words of each document are taken as input to the embedding network.
