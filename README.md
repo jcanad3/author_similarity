@@ -22,10 +22,6 @@ If the document has less than 10,000 words, then the sequences are padded with z
 ![V2 GloVe Visualization](https://github.com/jcanad3/author_similarity/blob/master/imgs/v2_glov_umap_embeddings.png)
 
 
-### V1 Top-1 Matches Sample
-A table of the V1 Top-1 matches for a random sample of works:
-![Top 1 Matches](https://github.com/jcanad3/author_similarity/blob/master/imgs/v1)
-
 ### V2 Top-1 Matches Sample
 A table of the V2 Top-1 matches for a random sample of works:
 ![Top 2 Matches](https://github.com/jcanad3/author_similarity/blob/master/imgs/v2)
