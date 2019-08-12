@@ -24,6 +24,6 @@ If the document has less than 10,000 words, then the sequences are padded with z
 
 ### V2 Top-1 Matches Sample
 A table of the V2 Top-1 matches for a random sample of works:
-![Top 2 Matches](https://github.com/jcanad3/author_similarity/blob/master/imgs/v2)
+![Top 2 Matches](https://github.com/jcanad3/author_similarity/blob/master/imgs/v2_top_1_matches.png)
 
 
