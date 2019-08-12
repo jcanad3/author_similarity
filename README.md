@@ -27,4 +27,4 @@ with zeros to achieve the necessary length.
 
 ### V2 Top-1 Matches Sample
 A table of the V2 Top-1 matches for a random sample of works:
-![Top 2 Matches](https://github.com/jcanad3/author_similarity/blob/master/imgs/v2_top_1_matches.png)
+![Top 1 Matches](https://github.com/jcanad3/author_similarity/blob/master/imgs/v2_random_query_top_1_matches.png)
