@@ -1,7 +1,12 @@
 from keras.preprocessing.text import one_hot, Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+from sklearn.preprocessing import normalize
 import numpy as np
-import pickle, random
+import pandas as pd
+import pickle, random, glob, re, os, operator
+
+import warnings
+warnings.filterwarnings("ignore")
 
 def gen_pairs(labels):
 	# make data set with padded doc sequences
@@ -49,27 +54,74 @@ def gen_pairs(labels):
 	print('Pairs shape:', pairs_idx.shape)
 	print('Pairs Labels:', pair_labels.shape)
 
-def gen_padded_docs(docs):
-	# fit tokens to words
+def fit_tokenizer(docs):
 	t = Tokenizer()
 	t.fit_on_texts(docs)
 	vocab_size = len(t.word_index) + 1
-	encoded_docs = t.texts_to_sequences(docs)
-#	print(encoded_docs)
-	
-	# pad docs
-	max_length = 10000
-	input_length = 10000
-	padded_docs = pad_sequences(encoded_docs, maxlen=max_length, padding='post')
-	np.save('padded_docs.npy', padded_docs)
-#	print(padded_docs)
+
+	with open('tokenizer.pkl', 'wb') as f:
+		pickle.dump(t, f)
 
 	return t, vocab_size
+
+def gen_padded_docs(t, docs):
+	# fit tokens to words
+	padded_docs = []
+	#words = list(t.word_index.keys())
+	#sorted_words_dict = dict(sorted(t.word_index.items(), key=operator.itemgetter(1)))
+	sorted_idx = list(t.word_index.values())
+	#sorted_idx = list(sorted_words_dict.values())
+
+	# text to sequence
+	seq_docs = t.texts_to_sequences(docs)
+
+	# integer encode documents
+	frequency_matrix = t.texts_to_matrix(docs, mode='tfidf')
+	frequency_matrix = frequency_matrix[:,1:]
+	frequency_matrix = normalize(frequency_matrix, axis=1, norm='l1')
+
+	max_len = 10000
+	encoded_docs = []
+	for idx in range(frequency_matrix.shape[0]):
+		if len(seq_docs[idx]) < max_len:
+			# pad the sequence
+			row_words = [seq_docs[idx]]
+			padded_doc = pad_sequences(row_words, maxlen=max_len, padding='post')
+			encoded_docs.append(padded_doc[0])
+		# sample from the frequency matrix
+		else:
+			row_weights = frequency_matrix[idx,:]
+			# need row indicies not words
+			sample = np.random.choice(sorted_idx, size=max_len, replace=True, p=row_weights)
+			encoded_docs.append(sample)
+	
+	padded_docs = np.array(encoded_docs)	
+#	np.save('v2_padded_docs.npy', padded_docs)
+#	print('Padded Docs Shape', padded_docs.shape)
+#	print(padded_docs)
+
+	return padded_docs
+
+def get_docs(t, start_idx, end_idx):
+	docs = []
+	for doc in glob.glob('../../scrape_gutenberg/works/*')[start_idx:end_idx]:
+		doc_path = os.path.basename(doc)
+		with open(doc, 'r') as f:
+			text = f.read().replace('\n',' ')
+		# remove the links
+		text = re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)
+		text = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', text, flags=re.MULTILINE)
+		text = re.sub('[0-9]+', '', text)
+		docs.append(text)
+
+	padded_docs = gen_padded_docs(t, docs)
+
+	return padded_docs
 
 def gen_embedding_matrix(t, vocab_size):
 	# get embedding matrix
 	embeddings_index = dict()
-	f = open('glove_embs/glove.6B.100d.txt')
+	f = open('../glove_embs/glove.6B.100d.txt')
 	for line in f:
 		values = line.split()
 		word = values[0]
@@ -85,14 +137,56 @@ def gen_embedding_matrix(t, vocab_size):
 	
 	np.save('glov_emb_matrix.npy', embedding_matrix)	
 
-# docs 
-with open('docs_list.data', 'rb') as f:
-	docs = pickle.load(f)
+def gen_author_df():
+	author_df = pd.DataFrame()
+	doc_ids = []
+	doc_id = 0
+	for doc in glob.glob('../../scrape_gutenberg/works/*'):
+		doc_path = os.path.basename(doc)
+		doc_ids = [doc_id]
+		authors = [doc_path.split('---')[1].replace('.txt', '')]
+		works = [doc_path.split('---')[0]]
+	
+		data = {'doc_id': doc_ids, 'author': authors, 'work': works}
+		partial_df = pd.DataFrame(data=data)
+		partial_df = partial_df.reindex(columns=['doc_id', 'author', 'work'])
+		author_df = author_df.append(partial_df, ignore_index=True)
+		doc_ids.append(doc_id)
+		doc_id += 1
 
-# labels 
-labels = np.load('docs_labels.npy')
+	author_df.to_csv('v2_author_df.csv', index=False)
+	np.save('v2_padded_ids.npy', doc_ids)
 
-#gen_pairs(labels)
+#gen_author_df()
+#docs = []
+#for doc in glob.glob('../../scrape_gutenberg/works/*')[:1000]:
+#	doc_path = os.path.basename(doc)
+#	with open(doc, 'r') as f:
+#		text = f.read().replace('\n',' ')
+#	# remove the links
+#	text = re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)
+#	text = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', text, flags=re.MULTILINE)
+#	text = re.sub('[0-9]+', '', text)
+#	docs.append(text)
 
-t, vocab_size = gen_padded_docs(docs)
-gen_embedding_matrix(t, vocab_size)
+#t, vocab_size = fit_tokenizer(docs)
+#print('Fit Tokenizer.')
+#print('Vocab Size', vocab_size)
+#gen_embedding_matrix(t, vocab_size)
+#print('Generated Embedding Matrix.')
+
+with open('../preprocessing/tokenizer.pkl', 'rb') as f:
+	t = pickle.load(f)
+
+padded_docs = np.asarray(())
+for d in range(0, 10000, 100):
+	docs_sample = get_docs(t, d, d+100)
+	if padded_docs.size == 0:
+		padded_docs = docs_sample
+	else:
+		padded_docs = np.vstack((padded_docs, docs_sample))
+
+	print('Padded Docs', padded_docs.shape)
+
+print('Padded Docs', padded_docs.shape)
+print(padded_docs)
