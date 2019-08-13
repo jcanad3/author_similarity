@@ -3,7 +3,7 @@ This repository uses word embeddings (GloVe) to compare the similarity of famous
 from the Gutenberg Dataset (https://web.eecs.umich.edu/~lahiri/gutenberg_dataset.html). 
 
 An unsupervised nearest neigbors search on the embeddings is implemented in each of the 
-v\*-notebooks. Using the generated dataframe,
+v\*\_notebooks. Using the generated dataframe,
 one could make book recommendations given a large enough dataset.
 
 ## Work Similarity
